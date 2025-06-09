@@ -1,4 +1,6 @@
-import React, { useEffect } from "react";
+// src/features/tasks/TaskModal.tsx
+
+import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TaskCreateSchema, TaskUpdateSchema } from "../../utils/zodSchemas";
@@ -16,15 +18,9 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
   const isEditMode = Boolean(initialData);
   const { createTask, updateTask } = useTasks();
 
-  // Definimos defaultValues incluindo somente “name” (nome do responsável).
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<TaskCreateForm | TaskUpdateForm>({
-    resolver: zodResolver(isEditMode ? TaskUpdateSchema : TaskCreateSchema),
-    defaultValues: {
+  // Valores padrão para NOVA tarefa
+  const defaultValues = useMemo<TaskCreateForm>(
+    () => ({
       title: "",
       description: "",
       client: "",
@@ -34,12 +30,31 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
       priority: "Média",
       status: "Pendente",
       link: "",
-      name: "",       // Aqui só “name”
-      // note que NÃO temos user_id no defaultValues
-    },
+      name: "",
+      // user_id é injetado internamente no createTask
+      observation: null,
+    }),
+    []
+  );
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<TaskCreateForm | TaskUpdateForm>({
+    resolver: zodResolver(isEditMode ? TaskUpdateSchema : TaskCreateSchema),
+    defaultValues,
   });
 
-  // Se estivermos em modo edição, carregamos os valores em reset()
+  // Ao abrir o modal em modo criação, resetar para os defaults
+  useEffect(() => {
+    if (isOpen && !isEditMode) {
+      reset(defaultValues);
+    }
+  }, [isOpen, isEditMode, reset, defaultValues]);
+
+  // Se vier initialData, popular o form em modo edição
   useEffect(() => {
     if (initialData) {
       reset({
@@ -48,43 +63,26 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
         description: initialData.description ?? "",
         client: initialData.client ?? "",
         sector: initialData.sector ?? "",
-        start_date: initialData.start_date ?? format(new Date(), "yyyy-MM-dd"),
-        due_date: initialData.due_date ?? format(new Date(), "yyyy-MM-dd"),
-        priority: initialData.priority ?? "Média",
-        status: initialData.status ?? "Pendente",
+        start_date: initialData.start_date ?? defaultValues.start_date,
+        due_date: initialData.due_date ?? defaultValues.due_date,
+        priority: initialData.priority ?? defaultValues.priority,
+        status: initialData.status ?? defaultValues.status,
         link: initialData.link ?? "",
-        name: initialData.name ?? "", // Carrega o “name” existente
-        // Não mexemos no user_id aqui: ele já veio do BD e fica imutável
-      });
-    } else {
-      reset({
-        title: "",
-        description: "",
-        client: "",
-        sector: "",
-        start_date: format(new Date(), "yyyy-MM-dd"),
-        due_date: format(new Date(), "yyyy-MM-dd"),
-        priority: "Média",
-        status: "Pendente",
-        link: "",
-        name: "",
-        id: undefined,
+        name: initialData.name ?? "",
+        observation: initialData.observation ?? null,
       });
     }
-  }, [initialData, reset]);
+  }, [initialData, reset, defaultValues]);
 
-  // Ao submeter, recebemos { name, title, … } sem user_id
   const onSubmit = async (data: TaskCreateForm | TaskUpdateForm) => {
     try {
-      if (isEditMode && initialData?.id) {
+      if (isEditMode && initialData) {
         const updateData: TaskUpdateForm = {
-          ...data,
+          ...(data as TaskUpdateForm),
           id: initialData.id,
-          // NÃO incluímos user_id aqui, pois ele não muda
         };
         await updateTask.mutateAsync(updateData);
       } else {
-        // Chamamos createTask; o próprio createTask vai injetar user_id internamente
         await createTask.mutateAsync(data as TaskCreateForm);
       }
       onClose();
@@ -98,7 +96,6 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-
       <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-lg p-6 shadow-lg z-10">
         <h2 className="text-xl font-bold mb-4">
           {isEditMode ? "Editar Tarefa" : "Nova Tarefa"}
@@ -114,7 +111,9 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
               className="mt-1 w-full border rounded px-3 py-2"
             />
             {errors.title && (
-              <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.title.message}
+              </p>
             )}
           </div>
 
@@ -142,20 +141,30 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
               className="mt-1 w-full border rounded px-3 py-2"
             />
             {errors.client && (
-              <p className="text-xs text-red-500 mt-1">{errors.client.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.client.message}
+              </p>
             )}
           </div>
 
           {/* Setor */}
           <div>
             <label className="block text-sm font-medium">Setor</label>
-            <input
-              type="text"
+            <select
               {...register("sector")}
               className="mt-1 w-full border rounded px-3 py-2"
-            />
+            >
+              <option value="">Selecione um setor</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Design">Design</option>
+              <option value="Web">Web</option>
+              <option value="Tráfego">Tráfego</option>
+              <option value="Copy">Copy</option>
+            </select>
             {errors.sector && (
-              <p className="text-xs text-red-500 mt-1">{errors.sector.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.sector.message}
+              </p>
             )}
           </div>
 
@@ -168,10 +177,11 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
               type="text"
               {...register("name")}
               className="mt-1 w-full border rounded px-3 py-2"
-              placeholder="Informe o nome do responsável"
             />
             {errors.name && (
-              <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.name.message}
+              </p>
             )}
           </div>
 
@@ -192,7 +202,9 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
 
           {/* Data de Vencimento */}
           <div>
-            <label className="block text-sm font-medium">Data de Vencimento</label>
+            <label className="block text-sm font-medium">
+              Data de Vencimento
+            </label>
             <input
               type="date"
               {...register("due_date")}
@@ -240,19 +252,21 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
             )}
           </div>
 
-          {/* Link */}
+          {/* Link (opcional) */}
           <div>
-  <label className="block text-sm font-medium">Link (opcional)</label>
-  <input
-    type="url"
-    {...register("link")}
-    className="mt-1 w-full border rounded px-3 py-2"
-    placeholder="https://exemplo.com"
-  />
-  {errors.link && (
-    <p className="text-xs text-red-500 mt-1">{errors.link.message}</p>
-  )}
-</div>
+            <label className="block text-sm font-medium">Link (opcional)</label>
+            <input
+              type="url"
+              {...register("link")}
+              className="mt-1 w-full border rounded px-3 py-2"
+              placeholder="https://exemplo.com"
+            />
+            {errors.link && (
+              <p className="text-xs text-red-500 mt-1">
+                {errors.link.message}
+              </p>
+            )}
+          </div>
 
           <div className="flex justify-end space-x-2 mt-6">
             <button

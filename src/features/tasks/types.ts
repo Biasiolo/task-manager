@@ -70,6 +70,7 @@ export type TaskUpdateForm = {
   name: string;               // Obrigatório (nome do responsável)
   user_id?: string | null;    // ID do responsável (opcional)
   observation?: string | null;
+  completed_at?: string | null;
 };
 
 /**

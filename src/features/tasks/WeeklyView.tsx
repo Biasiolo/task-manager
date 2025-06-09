@@ -1,135 +1,292 @@
-import React, { useState, useEffect } from "react";
-import { Task } from "./useTasks";
-import { format, startOfWeek, addDays, subDays, isSameDay } from "date-fns";
+// src/features/tasks/WeeklyView.tsx
+
+import React, { useEffect, useState } from "react";
+import {
+  format,
+  addDays,
+  subDays,
+  isSameDay,
+  isValid,
+} from "date-fns";
+import { ptBR } from "date-fns/locale";
+import * as ScrollArea from "@radix-ui/react-scroll-area";
+import * as Tooltip from "@radix-ui/react-tooltip";
+import * as Avatar from "@radix-ui/react-avatar";
 import { supabase } from "../../integrations/supabase/supabaseClient";
+import { Task } from "./useTasks";
+import { ChevronLeft, ChevronRight, User, CheckCircle2, Clock, Trash2 } from "lucide-react";
+import clsx from "clsx";
 
 interface WeeklyViewProps {
   tasks: Task[];
+  weekStart: Date;
+  onWeekChange: (newStart: Date) => void;
   onEdit: (task: Task) => void;
   onShare: (task: Task) => void;
   onDelete: (taskId: string) => void;
 }
 
-export function WeeklyView({ tasks, onEdit, onShare, onDelete }: WeeklyViewProps) {
-  const [startDate, setStartDate] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // Armazenar nomes dos usuários
+export function WeeklyView({
+  tasks,
+  weekStart,
+  onWeekChange,
+  onEdit,
+  onShare,
+  onDelete,
+}: WeeklyViewProps) {
+  const [userNames, setUserNames] = useState<{ [key: string]: string }>({});
 
-  const days = Array.from({ length: 7 }).map((_, i) => addDays(startDate, i));
+  const baseDate = isValid(weekStart) ? weekStart : new Date();
+  const days = Array.from({ length: 7 }).map((_, i) =>
+    addDays(baseDate, i)
+  );
 
-  const handleNextWeek = () => {
-    setStartDate((prev) => addDays(prev, 7));
-  };
+  const prev = () => onWeekChange(subDays(baseDate, 7));
+  const next = () => onWeekChange(addDays(baseDate, 7));
 
-  const handlePreviousWeek = () => {
-    setStartDate((prev) => subDays(prev, 7));
-  };
-
-  // Carregar os nomes dos responsáveis (usuários) ao montar o componente
   useEffect(() => {
-    const fetchUserNames = async () => {
-      // Buscar os usuários do Supabase
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, name");
-
-      if (error) {
-        console.error("Erro ao buscar usuários:", error);
-        return;
-      }
-
-      // Mapear para um objeto com chave id e nome do usuário
-      const names: { [key: string]: string } = {};
-      data?.forEach((user: { id: string; name: string }) => {
-        names[user.id] = user.name;
+    supabase
+      .from("profiles")
+      .select("id,name")
+      .then(({ data }) => {
+        if (data) {
+          const m: any = {};
+          data.forEach((u) => {
+            m[u.id] = u.name;
+          });
+          setUserNames(m);
+        }
       });
-
-      setUserNames(names);
-    };
-
-    fetchUserNames();
   }, []);
 
+  const today = new Date();
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={handlePreviousWeek}
-          className="bg-gray-200 text-sm px-3 py-1 rounded hover:bg-gray-300"
-        >
-          ← Semana Anterior
-        </button>
-        <h4 className="text-md font-semibold">
-          {format(days[0], "dd/MM/yyyy")} - {format(days[6], "dd/MM/yyyy")}
-        </h4>
-        <button
-          onClick={handleNextWeek}
-          className="bg-gray-200 text-sm px-3 py-1 rounded hover:bg-gray-300"
-        >
-          Próxima Semana →
-        </button>
-      </div>
+    <Tooltip.Provider delayDuration={200}>
+      <div className="space-y-6">
+        {/* Header Navigation */}
+        <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border">
+          <button
+            onClick={prev}
+            className="flex items-center cursor-pointer  gap-2 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition-all duration-200 border hover:border-gray-300"
+          >
+            <ChevronLeft size={16} />
+            <span className="font-medium">Anterior</span>
+          </button>
+          
+          <div className="text-center">
+            <h4 className="text-xl font-bold text-gray-900">
+              {isValid(days[0]) && isValid(days[6])
+                ? `${format(days[0], "dd/MM", { locale: ptBR })} – ${format(days[6], "dd/MM/yyyy", { locale: ptBR })}`
+                : "—/— – —/—"}
+            </h4>
+            <p className="text-sm text-gray-500 mt-1">
+              Visão Semanal
+            </p>
+          </div>
+          
+          <button
+            onClick={next}
+            className="flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 transition-all duration-200 border border-blue-200 hover:border-blue-300"
+          >
+            <span className="font-medium">Próxima</span>
+            <ChevronRight size={16} />
+          </button>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-2">
-        {days.map((day) => {
-          const dayTasks = tasks.filter((task) => {
-            if (!task.due_date) return false;
-            return isSameDay(new Date(task.due_date), day);
-          });
+        {/* Calendar Grid */}
+        <ScrollArea.Root className="w-full overflow-hidden rounded-2xl border bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm">
+          <ScrollArea.Viewport>
+            <div className="grid grid-cols-7 gap-3 p-4 min-w-max">
+              {days.map((day) => {
+                const dayTasks = tasks.filter(
+                  (t) => t.due_date && isSameDay(new Date(t.due_date), day)
+                );
+                
+                const isToday = isSameDay(day, today);
+                const completedTasks = dayTasks.filter(t => t.status === "Concluída").length;
+                const totalTasks = dayTasks.length;
 
-          return (
-            <div key={day.toISOString()} className="bg-white rounded shadow-sm p-4">
-              <div className="text-center text-sm font-semibold mb-2">
-                {format(day, "EEEE dd/MM")}
-              </div>
-              <div className="space-y-2">
-                {dayTasks.map((task) => {
-                  const responsibleUserName = userNames[task.user_id || ""];
-
-                  return (
-                    <div
-                      key={task.id}
-                      className="bg-blue-50 text-xs p-2 rounded cursor-pointer hover:bg-blue-100"
-                      onClick={() => onEdit(task)}
-                    >
-                      <div className="font-medium">{task.title}</div>
-                      {task.priority && (
-                        <div
-                          className={`text-xs mt-1 ${
-                            task.priority === "Alta"
-                              ? "text-red-600"
-                              : task.priority === "Média"
-                              ? "text-yellow-600"
-                              : "text-green-600"
-                          }`}
-                        >
-                          {task.priority}
+                return (
+                  <div
+                    key={day.toISOString()}
+                    className={clsx(
+                      "flex flex-col bg-white rounded-xl shadow-sm border transition-all duration-300 hover:shadow-md min-h-[200px]",
+                      isToday && "ring-2 ring-blue-500 ring-opacity-50 border-blue-200"
+                    )}
+                  >
+                    {/* Day Header */}
+                    <Tooltip.Root>
+                      <Tooltip.Trigger asChild>
+                        <div className={clsx(
+                          "px-3 py-2 rounded-t-xl text-center text-sm font-semibold cursor-default relative",
+                          isToday 
+                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white" 
+                            : "bg-gradient-to-r from-gray-700 to-gray-800 text-white"
+                        )}>
+                          {isValid(day) ? (
+                            <>
+                              <div className="text-xs opacity-90">
+                                {format(day, "EEE", { locale: ptBR }).toUpperCase()}
+                              </div>
+                              <div className="text-lg font-bold">
+                                {format(day, "dd", { locale: ptBR })}
+                              </div>
+                            </>
+                          ) : (
+                            "-- --"
+                          )}
+                          
+                          {/* Task counter badge */}
+                          {totalTasks > 0 && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                              {totalTasks}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {/* Exibindo o nome do responsável */}
-                      {task.user_id && responsibleUserName && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          Responsável: {responsibleUserName}
-                        </div>
-                      )}
-                      <div className="flex justify-between items-center mt-2">
-                        <button
-                          className="text-red-500"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(task.id);
-                          }}
+                      </Tooltip.Trigger>
+                      <Tooltip.Portal>
+                        <Tooltip.Content
+                          side="top"
+                          className="px-3 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg border border-gray-700"
                         >
-                          Excluir
-                        </button>
-                      </div>
+                          {isValid(day)
+                            ? format(day, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+                            : "Data inválida"}
+                          {totalTasks > 0 && (
+                            <div className="mt-1 text-xs opacity-90">
+                              {completedTasks}/{totalTasks} concluídas
+                            </div>
+                          )}
+                        </Tooltip.Content>
+                      </Tooltip.Portal>
+                    </Tooltip.Root>
+
+                    {/* Tasks Container */}
+                    <div className="flex-1 p-3 space-y-2 overflow-y-auto">
+                      {dayTasks.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full text-gray-400 py-8">
+                          <Clock size={24} className="mb-2 opacity-50" />
+                          <p className="text-xs text-center">Nenhuma tarefa</p>
+                        </div>
+                      ) : (
+                        dayTasks.map((t) => {
+                          const isDone = t.status === "Concluída";
+
+                          return (
+                            <div
+                              key={t.id}
+                              onClick={() => onEdit(t)}
+                              className={clsx(
+                                "p-3 rounded-lg cursor-pointer transition-all duration-200 border group relative overflow-hidden",
+                                isDone
+                                  ? "bg-green-50 hover:bg-green-100 border-green-200 hover:border-green-300"
+                                  : "bg-neutral-50 hover:bg-blue-100 border-blue-200 hover:border-blue-300 hover:shadow-sm"
+                              )}
+                            >
+                              {/* Priority indicator bar */}
+                              <div
+                                className={clsx(
+                                  "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg",
+                                  t.priority === "Alta" && "bg-red-500",
+                                  t.priority === "Média" && "bg-yellow-500",
+                                  t.priority === "Baixa" && "bg-green-500"
+                                )}
+                              />
+
+                              {/* Task Title */}
+                              <div className="flex items-start gap-2 mb-2">
+                                {isDone && (
+                                  <CheckCircle2 size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
+                                )}
+                                <h5
+                                  className={clsx(
+                                    "font-semibold text-sm leading-tight flex-1",
+                                    isDone 
+                                      ? "line-through text-gray-500" 
+                                      : "text-gray-900"
+                                  )}
+                                >
+                                  {t.title}
+                                </h5>
+                              </div>
+
+                              {/* Assignee */}
+                              <div className="flex items-center gap-2 mb-2">
+                                <Avatar.Root className="w-6 h-6 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                  <Avatar.Fallback
+                                    delayMs={600}
+                                    className="w-full h-full flex items-center justify-center text-[10px] font-bold text-white"
+                                  >
+                                    {(() => {
+                                      const name = t.name ?? "";
+                                      const parts = name.trim().split(" ");
+                                      if (parts.length === 1) {
+                                        return parts[0].charAt(0).toUpperCase();
+                                      }
+                                      return (
+                                        parts[0].charAt(0) +
+                                        parts[parts.length - 1].charAt(0)
+                                      ).toUpperCase();
+                                    })()}
+                                  </Avatar.Fallback>
+                                </Avatar.Root>
+                                <span className={clsx(
+                                  "text-xs font-medium flex-1",
+                                  isDone ? "text-gray-400" : "text-gray-700"
+                                )}>
+                                  {t.name ?? "Não atribuído"}
+                                </span>
+                              </div>
+
+                              {/* Footer */}
+                              <div className="flex justify-between items-center">
+                                <span
+                                  className={clsx(
+                                    "text-xs font-medium px-2 py-1 rounded-full",
+                                    t.priority === "Alta" && (isDone ? "bg-gray-100 text-gray-400" : "bg-red-100 text-red-700"),
+                                    t.priority === "Média" && (isDone ? "bg-gray-100 text-gray-400" : "bg-yellow-100 text-yellow-700"),
+                                    t.priority === "Baixa" && (isDone ? "bg-gray-100 text-gray-400" : "bg-green-100 text-green-700")
+                                  )}
+                                >
+                                  {t.priority}
+                                </span>
+                                
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete(t.id);
+                                  }}
+                                  className={clsx(
+                                    "p-1.5 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100",
+                                    isDone
+                                      ? "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                                      : "text-red-400 hover:text-red-600 hover:bg-red-50"
+                                  )}
+                                  title="Excluir tarefa"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          </ScrollArea.Viewport>
+
+          <ScrollArea.Scrollbar
+            orientation="horizontal"
+            className="flex touch-none p-0.5 bg-gray-100 rounded-b-2xl"
+          >
+            <ScrollArea.Thumb className="flex-1 bg-gray-400 rounded-full opacity-50 hover:opacity-75 transition-opacity" />
+          </ScrollArea.Scrollbar>
+        </ScrollArea.Root>
       </div>
-    </div>
+    </Tooltip.Provider>
   );
 }

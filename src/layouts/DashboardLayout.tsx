@@ -7,7 +7,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen ">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r">
         <div className="px-4 py-6">
@@ -30,7 +30,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-gray-50">
+      <div className="flex-1 flex flex-col bg-neutral-100">
         {/* Header */}
         <header className="h-16 bg-white border-b px-6 flex items-center justify-between">
           <span>Bem-vindo, Usuário</span>

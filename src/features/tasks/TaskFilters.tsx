@@ -1,22 +1,22 @@
 // src/features/tasks/TaskFilters.tsx
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { supabase } from "../../integrations/supabase/supabaseClient";
+import type { Task } from "./useTasks";
 
 export interface FilterValues {
   sector: string;
   priority: string;
   user: string;    // aqui guardamos o “name” do responsável
   client: string;
-  date: string;    // ainda que não tenhamos campo de data no filtro por enquanto
+  date: string;
 }
 
 interface TaskFiltersProps {
+  tasks: Task[];                   // ← receber o array completo de tarefas
   onFilter: (filters: FilterValues) => void;
 }
 
-export function TaskFilters({ onFilter }: TaskFiltersProps) {
+export function TaskFilters({ tasks, onFilter }: TaskFiltersProps) {
   const { control, handleSubmit, reset } = useForm<FilterValues>({
     defaultValues: {
       sector: "",
@@ -27,49 +27,22 @@ export function TaskFilters({ onFilter }: TaskFiltersProps) {
     },
   });
 
-  // substituímos “users” por “responsibles”: lista de nomes vindos de tasks.name
-  const [responsibles, setResponsibles] = useState<string[]>([]);
-  const [clients, setClients] = useState<string[]>([]);
+  // Deriva, via useMemo, a lista única de responsáveis e clientes
+  const responsibles = useMemo(() => {
+    const names = tasks
+      .map((t) => t.name ?? "")
+      .filter((n) => n.trim() !== "");
+    return Array.from(new Set(names));
+  }, [tasks]);
 
-  useEffect(() => {
-    // busca apenas os nomes (campo `name`) de todas as tarefas, desconsiderando nulos/vazios
-    const fetchResponsibles = async () => {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("name")
-        .not("name", "is", null); // só traz nomes não-nulos
+  const clients = useMemo(() => {
+    const cs = tasks
+      .map((t) => t.client ?? "")
+      .filter((c) => c.trim() !== "");
+    return Array.from(new Set(cs));
+  }, [tasks]);
 
-      if (!error && data) {
-        // extrai strings únicas
-        const names = data
-          .map((row: { name: string | null }) => row.name ?? "")
-          .filter((n) => n.trim() !== "");
-        setResponsibles(Array.from(new Set(names)));
-      }
-    };
-
-    // busca clientes únicos diretamente da tabela tasks.client
-    const fetchClients = async () => {
-      const { data, error } = await supabase.from("tasks").select("client");
-      if (!error && data) {
-        const unique = Array.from(
-          new Set(
-            data
-              .map((task: { client: string | null }) => task.client ?? "")
-              .filter((c) => c.trim() !== "")
-          )
-        );
-        setClients(unique);
-      }
-    };
-
-    fetchResponsibles();
-    fetchClients();
-  }, []);
-
-  const submit = (data: FilterValues) => {
-    onFilter(data);
-  };
+  const submit = (data: FilterValues) => onFilter(data);
 
   return (
     <form onSubmit={handleSubmit(submit)} className="flex flex-wrap gap-4">
@@ -103,7 +76,7 @@ export function TaskFilters({ onFilter }: TaskFiltersProps) {
         )}
       />
 
-      {/* Responsável (filtra por `tasks.name`) */}
+      {/* Responsável (filtra por nome que está em t.name) */}
       <Controller
         name="user"
         control={control}
