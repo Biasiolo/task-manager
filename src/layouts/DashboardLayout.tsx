@@ -1,13 +1,27 @@
+// src/layouts/DashboardLayout.tsx
+
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { supabase } from "../integrations/supabase/supabaseClient";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Erro ao deslogar:", error.message);
+    } else {
+      navigate("/login"); // ou a rota de login da sua aplicação
+    }
+  };
+
   return (
-    <div className="flex h-screen ">
+    <div className="flex h-screen">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r">
         <div className="px-4 py-6">
@@ -17,35 +31,32 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <NavLink
             to="/dashboard"
             className={({ isActive }) =>
-              `px-3 py-2 rounded ${isActive ? "bg-blue-100" : "hover:bg-gray-100"}`
+              `px-3 py-2 rounded ${
+                isActive ? "bg-blue-100" : "hover:bg-gray-100"
+              }`
             }
           >
             Dashboard
           </NavLink>
-          <NavLink to="/dashboard/tasks" className="px-3 py-2 rounded hover:bg-gray-100">
+          <NavLink
+            to="/dashboard/tasks"
+            className="px-3 py-2 rounded hover:bg-gray-100"
+          >
             Minhas Tarefas
           </NavLink>
-          {/* Outras rotas se necessário */}
+          {/* Outras rotas */}
         </nav>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col bg-neutral-100">
-        {/* Header */}
         <header className="h-16 bg-white border-b px-6 flex items-center justify-between">
-          <span>Bem-vindo, Usuário</span>
-          <button
-            onClick={() => {
-              // logout no Supabase
-            }}
-            className="text-sm text-red-500"
-          >
+          <span>Bem-vindo</span>
+          <button onClick={handleLogout} className="text-sm text-red-500">
             Sair
           </button>
         </header>
-
-        {/* Conteúdo principal */}
-        <main className="p-6 flex-1 overflow-y-auto">{children}</main>
+        <main className="p-6 flex-1 overflow-y-auto bg-neutral-300">{children}</main>
       </div>
     </div>
   );

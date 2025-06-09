@@ -73,7 +73,7 @@ export function WeeklyView({
             <ChevronLeft size={16} />
             <span className="font-medium">Anterior</span>
           </button>
-          
+
           <div className="text-center">
             <h4 className="text-xl font-bold text-gray-900">
               {isValid(days[0]) && isValid(days[6])
@@ -84,7 +84,7 @@ export function WeeklyView({
               Visão Semanal
             </p>
           </div>
-          
+
           <button
             onClick={next}
             className="flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 transition-all duration-200 border border-blue-200 hover:border-blue-300"
@@ -95,14 +95,14 @@ export function WeeklyView({
         </div>
 
         {/* Calendar Grid */}
-        <ScrollArea.Root className="w-full overflow-hidden rounded-2xl border bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm">
+        <ScrollArea.Root className="w-full overflow-hidden rounded-2xl border bg-black shadow-sm">
           <ScrollArea.Viewport>
             <div className="grid grid-cols-7 gap-3 p-4 min-w-max">
               {days.map((day) => {
-                const dayTasks = tasks.filter(
-                  (t) => t.due_date && isSameDay(new Date(t.due_date), day)
-                );
-                
+                const dayTasks = tasks
+                  .filter((t) => t.due_date && isSameDay(new Date(t.due_date), day))
+                  .filter((t) => t.status !== "Concluída");  // remove concluídas
+
                 const isToday = isSameDay(day, today);
                 const completedTasks = dayTasks.filter(t => t.status === "Concluída").length;
                 const totalTasks = dayTasks.length;
@@ -119,9 +119,9 @@ export function WeeklyView({
                     <Tooltip.Root>
                       <Tooltip.Trigger asChild>
                         <div className={clsx(
-                          "px-3 py-2 rounded-t-xl text-center text-sm font-semibold cursor-default relative",
-                          isToday 
-                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white" 
+                          "px-3 py-2 rounded-t-xl text-center text-sm font-semibold cursor-default relative border",
+                          isToday
+                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white"
                             : "bg-gradient-to-r from-gray-700 to-gray-800 text-white"
                         )}>
                           {isValid(day) ? (
@@ -136,7 +136,7 @@ export function WeeklyView({
                           ) : (
                             "-- --"
                           )}
-                          
+
                           {/* Task counter badge */}
                           {totalTasks > 0 && (
                             <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
@@ -148,14 +148,14 @@ export function WeeklyView({
                       <Tooltip.Portal>
                         <Tooltip.Content
                           side="top"
-                          className="px-3 py-2 rounded-lg bg-gray-900 text-white text-sm shadow-lg border border-gray-700"
+                          className="px-3 py-2 rounded-lg bg-amber-400 text-gray-900 text-sm shadow-lg border border-gray-700 mb-2"
                         >
                           {isValid(day)
                             ? format(day, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })
                             : "Data inválida"}
                           {totalTasks > 0 && (
                             <div className="mt-1 text-xs opacity-90">
-                              {completedTasks}/{totalTasks} concluídas
+                              {totalTasks} pendente(s)
                             </div>
                           )}
                         </Tooltip.Content>
@@ -178,16 +178,16 @@ export function WeeklyView({
                               key={t.id}
                               onClick={() => onEdit(t)}
                               className={clsx(
-                                "p-3 rounded-lg cursor-pointer transition-all duration-200 border group relative overflow-hidden",
+                                "py-2 px-4 rounded-lg cursor-pointer transition-all duration-200 border-none group relative overflow-hidden",
                                 isDone
-                                  ? "bg-green-50 hover:bg-green-100 border-green-200 hover:border-green-300"
-                                  : "bg-neutral-50 hover:bg-blue-100 border-blue-200 hover:border-blue-300 hover:shadow-sm"
+                                  ? "bg-green-50 hover:bg-green-100"
+                                  : "bg-indigo-100 hover:bg-orange-100  hover:shadow-sm"
                               )}
                             >
                               {/* Priority indicator bar */}
                               <div
                                 className={clsx(
-                                  "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg",
+                                  "absolute left-0 top-0 bottom-0 w-2 me-4 rounded-l-lg",
                                   t.priority === "Alta" && "bg-red-500",
                                   t.priority === "Média" && "bg-yellow-500",
                                   t.priority === "Baixa" && "bg-green-500"
@@ -202,8 +202,8 @@ export function WeeklyView({
                                 <h5
                                   className={clsx(
                                     "font-semibold text-sm leading-tight flex-1",
-                                    isDone 
-                                      ? "line-through text-gray-500" 
+                                    isDone
+                                      ? "line-through text-gray-500"
                                       : "text-gray-900"
                                   )}
                                 >
@@ -251,7 +251,7 @@ export function WeeklyView({
                                 >
                                   {t.priority}
                                 </span>
-                                
+
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
