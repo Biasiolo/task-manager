@@ -1,6 +1,16 @@
+// src/features/tasks/TaskCard.tsx
+
 import React from "react";
 import { Task } from "./useTasks";
-import { Edit2, User, Check, Calendar, AlertCircle, CheckCircle2, Trash2 } from "lucide-react";
+import {
+  Edit2,
+  User,
+  Check,
+  Calendar,
+  AlertCircle,
+  CheckCircle2,
+  Trash2,
+} from "lucide-react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { supabase } from "../../integrations/supabase/supabaseClient";
 import { useQueryClient } from "@tanstack/react-query";
@@ -14,7 +24,12 @@ interface TaskCardProps {
   onDelete: (taskId: string) => void;
 }
 
-export function TaskCard({ task, onEdit, onShare, onDelete }: TaskCardProps) {
+export function TaskCard({
+  task,
+  onEdit,
+  onShare,
+  onDelete,
+}: TaskCardProps) {
   const queryClient = useQueryClient();
   const dueDate = task.due_date ? new Date(task.due_date) : null;
   const isOverdue =
@@ -22,7 +37,8 @@ export function TaskCard({ task, onEdit, onShare, onDelete }: TaskCardProps) {
 
   // Alterna entre Pendente e Concluída direto no Supabase
   const toggleComplete = async () => {
-    const nextStatus = task.status === "Concluída" ? "Pendente" : "Concluída";
+    const nextStatus =
+      task.status === "Concluída" ? "Pendente" : "Concluída";
     const completed_at =
       nextStatus === "Concluída" ? new Date().toISOString() : null;
 
@@ -41,25 +57,32 @@ export function TaskCard({ task, onEdit, onShare, onDelete }: TaskCardProps) {
   return (
     <div
       className={clsx(
-        "group relative bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border transition-all duration-300 hover:shadow-lg hover:scale-[1.02] overflow-hidden",
-        // Estados baseados no status
+        "group relative bg-white/80 h-72 backdrop-blur-sm rounded-3xl shadow-md shadow-neutral-500 border-none transition-all duration-300 hover:shadow-lg hover:scale-[1.02] overflow-hidden",
         task.status === "Concluída" && "bg-slate-50/80 border-slate-200/50",
-        task.status !== "Concluída" && isOverdue && "bg-red-50/80 border-red-200/60",
-        task.status === "Pendente" && !isOverdue && "border-slate-200/50"
+        task.status !== "Concluída" &&
+          isOverdue &&
+          "bg-red-50/80 border-red-200/60",
+        task.status === "Pendente" &&
+          !isOverdue &&
+          "border-slate-200/50"
       )}
     >
-      {/* Barra lateral de prioridade com gradiente refinado */}
+      {/* Faixa de prioridade no topo */}
       <div
         className={clsx(
-          "absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300",
-          task.priority === "Alta" && "bg-gradient-to-b from-rose-500 via-red-500 to-red-600",
-          task.priority === "Média" && "bg-gradient-to-b from-amber-400 via-orange-400 to-orange-500",
-          task.priority === "Baixa" && "bg-gradient-to-b from-emerald-400 via-green-500 to-green-600"
+          "absolute top-0 left-0 right-0 h-2 rounded-t-lg transition-all duration-300",
+          task.priority === "Alta" &&
+            "bg-gradient-to-b from-rose-500 via-red-500 to-red-600",
+          task.priority === "Média" &&
+            "bg-gradient-to-b from-amber-400 via-orange-400 to-orange-500",
+          task.priority === "Baixa" &&
+            "bg-gradient-to-b from-amber-400 via-yellow-500 to-yellow-600"
         )}
       />
 
-      <div className="p-6 pl-8">
-        {/* Header */}
+      {/* Conteúdo em coluna para empurrar o footer para o fim */}
+      <div className="flex flex-col h-full p-6 pl-8">
+        {/* HEADER */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-3 flex-1">
             <CheckboxPrimitive.Root
@@ -90,13 +113,11 @@ export function TaskCard({ task, onEdit, onShare, onDelete }: TaskCardProps) {
               >
                 {task.title}
               </h3>
-
-              {/* Cliente e setor com melhor hierarquia */}
               {(task.client || task.sector) && (
                 <div className="flex flex-col gap-1 mt-2">
                   {task.client && (
                     <p className="text-sm font-medium text-slate-600 flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
                       {task.client}
                     </p>
                   )}
@@ -110,35 +131,36 @@ export function TaskCard({ task, onEdit, onShare, onDelete }: TaskCardProps) {
             </div>
           </div>
 
-          {/* Badge prioridade refinado */}
           <span
             className={clsx(
               "text-xs font-semibold rounded-full px-3 py-1.5 whitespace-nowrap ml-3 shadow-sm border backdrop-blur-sm",
               task.priority === "Alta" &&
                 (task.status === "Concluída"
-                  ? "bg-red-50/80 text-red-700 border-red-200/60"
+                  ? "bg-green-50/80 text-green-700 border-green-200/60"
                   : "bg-red-100/80 text-red-700 border-red-300/60"),
               task.priority === "Média" &&
                 (task.status === "Concluída"
-                  ? "bg-amber-50/80 text-amber-700 border-amber-200/60"
-                  : "bg-amber-100/80 text-amber-700 border-amber-300/60"),
+                  ? "bg-green-50/80 text-green-700 border-green-200/60"
+                  : "bg-orange-100/80 text-orange-700 border-orange-300/60"),
               task.priority === "Baixa" &&
                 (task.status === "Concluída"
-                  ? "bg-emerald-50/80 text-emerald-700 border-emerald-200/60"
-                  : "bg-emerald-100/80 text-emerald-700 border-emerald-300/60")
+                  ? "bg-green-50/80 text-green-700 border-green-200/60"
+                  : "bg-yellow-100/80 text-yellow-700 border-yellow-300/60")
             )}
           >
             {task.priority}
           </span>
         </div>
 
-        {/* Descrição */}
+        {/* DESCRIÇÃO */}
         {task.description && (
           <div className="mb-4">
             <p
               className={clsx(
-                "text-sm leading-relaxed",
-                task.status === "Concluída" ? "text-slate-500" : "text-slate-600"
+                "text-xs leading-relaxed",
+                task.status === "Concluída"
+                  ? "text-slate-500"
+                  : "text-slate-600"
               )}
             >
               {task.description}
@@ -146,7 +168,7 @@ export function TaskCard({ task, onEdit, onShare, onDelete }: TaskCardProps) {
           </div>
         )}
 
-        {/* Responsável com avatar melhorado */}
+        {/* RESPONSÁVEL */}
         <div className="flex items-center gap-3 mb-4">
           <div className="flex items-center justify-center w-7 h-7 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full shadow-sm border border-slate-200/50">
             <User size={14} className="text-slate-600" />
@@ -159,7 +181,10 @@ export function TaskCard({ task, onEdit, onShare, onDelete }: TaskCardProps) {
           </div>
         </div>
 
-        {/* Footer com separador sutil */}
+        {/* PREENCHE O ESPAÇO RESTANTE */}
+        <div className="flex-1" />
+
+        {/* FOOTER */}
         <div className="flex items-center justify-between pt-4 border-t border-slate-200/50">
           <div className="flex items-center gap-2">
             {task.status === "Concluída" ? (
@@ -184,7 +209,6 @@ export function TaskCard({ task, onEdit, onShare, onDelete }: TaskCardProps) {
             )}
           </div>
 
-          {/* Botões de ação refinados */}
           <div className="flex items-center gap-1">
             <button
               onClick={() => onEdit(task)}
@@ -207,7 +231,7 @@ export function TaskCard({ task, onEdit, onShare, onDelete }: TaskCardProps) {
         </div>
       </div>
 
-      {/* Efeito de hover sutil */}
+      {/* Overlay de hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl" />
     </div>
   );

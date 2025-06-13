@@ -58,12 +58,12 @@ export function TaskFilters({ tasks, onFilter }: TaskFiltersProps) {
     <div className="space-y-4">
       {/* Header dos filtros */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 text-slate-700">
+        <div className="flex items-center gap-2 text-gray-800">
           <Filter size={18} className="text-slate-500" />
-          <h3 className="font-medium">Filtros</h3>
+          <h3 className="font-semibold">Filtros</h3>
         </div>
         {hasActiveFilters && (
-          <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-medium">
+          <span className="text-xs bg-slate-100 text-gray-800 px-2 py-1 rounded-full font-medium">
             Filtros ativos
           </span>
         )}
@@ -75,7 +75,7 @@ export function TaskFilters({ tasks, onFilter }: TaskFiltersProps) {
           
           {/* Setor */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Setor</label>
+            <label className="text-sm font-medium text-gray-800">Setor</label>
             <Controller
               name="sector"
               control={control}
@@ -99,7 +99,7 @@ export function TaskFilters({ tasks, onFilter }: TaskFiltersProps) {
 
           {/* Prioridade */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Prioridade</label>
+            <label className="text-sm font-medium text-gray-800">Prioridade</label>
             <Controller
               name="priority"
               control={control}
@@ -112,8 +112,8 @@ export function TaskFilters({ tasks, onFilter }: TaskFiltersProps) {
                 >
                   <option value="">Todas as Prioridades</option>
                   <option value="Alta">🔴 Alta</option>
-                  <option value="Média">🟡 Média</option>
-                  <option value="Baixa">🟢 Baixa</option>
+                  <option value="Média">🟠 Média</option>
+                  <option value="Baixa">🟡 Baixa</option>
                 </select>
               )}
             />
@@ -121,7 +121,7 @@ export function TaskFilters({ tasks, onFilter }: TaskFiltersProps) {
 
           {/* Responsável */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Responsável</label>
+            <label className="text-sm font-medium text-gray-800">Responsável</label>
             <Controller
               name="user"
               control={control}
@@ -145,7 +145,7 @@ export function TaskFilters({ tasks, onFilter }: TaskFiltersProps) {
 
           {/* Cliente */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Cliente</label>
+            <label className="text-sm font-medium text-gray-800">Cliente</label>
             <Controller
               name="client"
               control={control}
@@ -169,7 +169,7 @@ export function TaskFilters({ tasks, onFilter }: TaskFiltersProps) {
 
           {/* Ações */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 opacity-0">Ações</label>
+            <label className="text-sm font-medium text-gray-800 opacity-0">Ações</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -201,7 +201,7 @@ export function TaskFilters({ tasks, onFilter }: TaskFiltersProps) {
           <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200/50">
             <span className="text-xs text-slate-500 font-medium">Filtros ativos:</span>
             {watchedValues.sector && (
-              <span className="inline-flex items-center gap-1 bg-blue-100/80 text-blue-700 px-2 py-1 rounded-lg text-xs font-medium border border-blue-200/50">
+              <span className="inline-flex items-center gap-1 bg-teal-100/80 text-teal-700 px-2 py-1 rounded-lg text-xs font-medium border border-teal-200/50">
                 Setor: {watchedValues.sector}
               </span>
             )}

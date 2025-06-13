@@ -56,15 +56,15 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-stone-50 p-6">
+      <div className="min-h-screen bg-neutral-950 p-6">
         {/* Container principal com design mais sofisticado */}
         <div className="max-w-full mx-auto space-y-8">
           
           {/* Cabeçalho principal */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100/50 p-8">
+          <div className="bg-neutral-100 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100/50 p-8">
             <div className="flex items-center justify-between">
               <div className="space-y-2">
-                <h1 className="text-3xl font-light text-slate-800 tracking-tight">
+                <h1 className="text-3xl font-semibold text-gray-800 tracking-tight">
                   Dashboard de Tarefas
                 </h1>
                 <p className="text-slate-500 font-light">
@@ -74,7 +74,7 @@ export default function Dashboard() {
               
               <button
                 onClick={openNew}
-                className="group relative bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl 
+                className="group relative bg-teal-700 hover:bg-slate-700 text-white px-6 py-3 rounded-xl 
                          font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5
                          border border-slate-700/20"
               >
@@ -89,16 +89,16 @@ export default function Dashboard() {
           </div>
 
           {/* Seção de filtros com design refinado */}
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100/50 p-6">
+          <div className="bg-neutral-100 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100/50 p-6">
             <TaskFilters tasks={tasks} onFilter={setFilters} />
           </div>
 
           {/* Visão semanal com header melhorado */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100/50 overflow-hidden">
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-8 py-6">
+          <div className="bg-white backdrop-blur-sm rounded-3xl shadow-sm  overflow-hidden">
+            <div className="bg-teal-700 px-8 py-6">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-8 bg-amber-400 rounded-full"></div>
-                <h2 className="text-xl font-medium text-white">Visão Semanal</h2>
+                <div className="w-2 h-8 bg-orange-400 rounded-full"></div>
+                <h2 className="text-xl font-semibold text-white">Visão Semanal</h2>
               </div>
             </div>
             
@@ -115,10 +115,10 @@ export default function Dashboard() {
           </div>
 
           {/* Grid de cards com espaçamento aprimorado */}
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100/50 p-8">
+          <div className="bg-white backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100/50 p-8">
           
             <div className="flex items-center gap-3 mb-6 ">
-              <div className="w-2 h-8 bg-emerald-400 rounded-full"></div>
+              <div className="w-2 h-8 bg-orange-500 rounded-full"></div>
               <h3 className="text-xl font-medium text-slate-800">Tarefas da Semana</h3>
             </div>
 

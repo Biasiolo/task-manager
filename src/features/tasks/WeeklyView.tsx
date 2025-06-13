@@ -65,10 +65,10 @@ export function WeeklyView({
     <Tooltip.Provider delayDuration={200}>
       <div className="space-y-6">
         {/* Header Navigation */}
-        <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border">
+        <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-md shadow-neutral-500 border-none">
           <button
             onClick={prev}
-            className="flex items-center cursor-pointer  gap-2 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition-all duration-200 border hover:border-gray-300"
+            className="flex items-center cursor-pointer  gap-2 px-6 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 hover:text-teal-800 transition-all duration-200 border border-teal-600 hover:border-teal-300"
           >
             <ChevronLeft size={16} />
             <span className="font-medium">Anterior</span>
@@ -87,7 +87,7 @@ export function WeeklyView({
 
           <button
             onClick={next}
-            className="flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 transition-all duration-200 border border-blue-200 hover:border-blue-300"
+            className="flex cursor-pointer items-center gap-2 px-6 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 hover:text-teal-800 transition-all duration-200 border border-teal-600 hover:border-teal-300"
           >
             <span className="font-medium">Próxima</span>
             <ChevronRight size={16} />
@@ -95,7 +95,7 @@ export function WeeklyView({
         </div>
 
         {/* Calendar Grid */}
-        <ScrollArea.Root className="w-full overflow-hidden rounded-2xl border bg-black shadow-sm">
+        <ScrollArea.Root className="w-full overflow-hidden rounded-2xl border-none  shadow-md shadow-neutral-500">
           <ScrollArea.Viewport>
             <div className="grid grid-cols-7 gap-3 p-4 min-w-max">
               {days.map((day) => {
@@ -111,18 +111,18 @@ export function WeeklyView({
                   <div
                     key={day.toISOString()}
                     className={clsx(
-                      "flex flex-col bg-white rounded-xl shadow-sm border transition-all duration-300 hover:shadow-md min-h-[200px]",
-                      isToday && "ring-2 ring-blue-500 ring-opacity-50 border-blue-200"
+                      "flex flex-col bg-white rounded-xl shadow-md shadow-neutral-500 border-none transition-all duration-300 hover:shadow-md min-h-[200px]",
+                      isToday && "ring-2 ring-white ring-opacity-50 border-blue-200"
                     )}
                   >
                     {/* Day Header */}
                     <Tooltip.Root>
                       <Tooltip.Trigger asChild>
                         <div className={clsx(
-                          "px-3 py-2 rounded-t-xl text-center text-sm font-semibold cursor-default relative border",
+                          "px-3 py-2 rounded-t-xl text-center text-sm font-semibold cursor-default relative border-none",
                           isToday
-                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white"
-                            : "bg-gradient-to-r from-gray-700 to-gray-800 text-white"
+                            ? "bg-orange-500 text-white"
+                            : "bg-teal-700 text-white"
                         )}>
                           {isValid(day) ? (
                             <>
@@ -148,7 +148,7 @@ export function WeeklyView({
                       <Tooltip.Portal>
                         <Tooltip.Content
                           side="top"
-                          className="px-3 py-2 rounded-lg bg-amber-400 text-gray-900 text-sm shadow-lg border border-gray-700 mb-2"
+                          className="px-3 py-2 rounded-lg bg-orange-100 text-gray-900 text-sm shadow-lg border-none mb-2"
                         >
                           {isValid(day)
                             ? format(day, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })
@@ -181,21 +181,21 @@ export function WeeklyView({
                                 "py-2 px-4 rounded-lg cursor-pointer transition-all duration-200 border-none group relative overflow-hidden",
                                 isDone
                                   ? "bg-green-50 hover:bg-green-100"
-                                  : "bg-indigo-100 hover:bg-orange-100  hover:shadow-sm"
+                                  : "bg-white shadow-md shadow-neutral-500 hover:bg-orange-100  hover:shadow-sm"
                               )}
                             >
                               {/* Priority indicator bar */}
                               <div
                                 className={clsx(
-                                  "absolute left-0 top-0 bottom-0 w-2 me-4 rounded-l-lg",
-                                  t.priority === "Alta" && "bg-red-500",
-                                  t.priority === "Média" && "bg-yellow-500",
-                                  t.priority === "Baixa" && "bg-green-500"
+                                  "absolute top-0 left-0 right-0 h-2 rounded-t-lg",
+                                  t.priority === "Alta" && "bg-red-600/60",
+                                  t.priority === "Média" && "bg-orange-400/70",
+                                  t.priority === "Baixa" && "bg-yellow-300/70"
                                 )}
                               />
 
                               {/* Task Title */}
-                              <div className="flex items-start gap-2 mb-2">
+                              <div className="flex items-start gap-2 m-2">
                                 {isDone && (
                                   <CheckCircle2 size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
                                 )}
@@ -213,10 +213,10 @@ export function WeeklyView({
 
                               {/* Assignee */}
                               <div className="flex items-center gap-2 mb-2">
-                                <Avatar.Root className="w-6 h-6 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                <Avatar.Root className="w-6 h-6 overflow-hidden rounded-full bg-gradient-to-br from-stone-300 via-gray-200 to-stone-400 flex items-center justify-center">
                                   <Avatar.Fallback
                                     delayMs={600}
-                                    className="w-full h-full flex items-center justify-center text-[10px] font-bold text-white"
+                                    className="w-full h-full flex items-center justify-center text-[10px] font-bold text-black"
                                   >
                                     {(() => {
                                       const name = t.name ?? "";
@@ -244,9 +244,9 @@ export function WeeklyView({
                                 <span
                                   className={clsx(
                                     "text-xs font-medium px-2 py-1 rounded-full",
-                                    t.priority === "Alta" && (isDone ? "bg-gray-100 text-gray-400" : "bg-red-100 text-red-700"),
-                                    t.priority === "Média" && (isDone ? "bg-gray-100 text-gray-400" : "bg-yellow-100 text-yellow-700"),
-                                    t.priority === "Baixa" && (isDone ? "bg-gray-100 text-gray-400" : "bg-green-100 text-green-700")
+                                    t.priority === "Alta" && (isDone ? "bg-gray-100 text-gray-400" : "bg-red-100 text-red-400"),
+                                    t.priority === "Média" && (isDone ? "bg-gray-100 text-gray-400" : "bg-orange-100 text-orange-500"),
+                                    t.priority === "Baixa" && (isDone ? "bg-gray-100 text-gray-400" : "bg-yellow-100 text-yellow-600")
                                   )}
                                 >
                                   {t.priority}

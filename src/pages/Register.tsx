@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const RegisterSchema = z
   .object({
+    name: z.string().min(1, { message: "Nome é obrigatório" }),
     email: z.string().email({ message: "E-mail inválido" }),
     password: z.string().min(6, { message: "A senha deve ter ao menos 6 caracteres" }),
     confirm: z.string().min(6),
@@ -28,34 +29,32 @@ export default function Register() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(RegisterSchema),
-    defaultValues: { email: "", password: "", confirm: "" },
+    defaultValues: { name: "", email: "", password: "", confirm: "" },
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
-  setAuthError(null);
-  try {
-    // Cria o usuário e já o autentica diretamente
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        // desativa o email de confirmação (se seu projeto permitir)
-        emailRedirectTo: window.location.origin + "/dashboard",
-      },
-    });
+    setAuthError(null);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          // Grava o nome em user_metadata
+          data: { name: data.name },
+          emailRedirectTo: window.location.origin + "/dashboard",
+        },
+      });
 
-    if (error) {
-      setAuthError(error.message);
-    } else {
-      // Após registro bem-sucedido, já redirecionamos ao dashboard
-      navigate("/dashboard");
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setAuthError("Erro inesperado. Tente novamente.");
     }
-  } catch (err: any) {
-    console.error(err);
-    setAuthError("Erro inesperado. Tente novamente.");
-  }
-};
-
+  };
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -67,6 +66,25 @@ export default function Register() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Nome */}
+          <div>
+            <label className="block text-sm font-medium">Nome</label>
+            <input
+              type="text"
+              {...register("name")}
+              className={`mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 ${
+                errors.name
+                  ? "border-red-400 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-green-200"
+              }`}
+              placeholder="Seu nome completo"
+            />
+            {errors.name && (
+              <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
+            )}
+          </div>
+
+          {/* E-mail */}
           <div>
             <label className="block text-sm font-medium">E-mail</label>
             <input
@@ -75,7 +93,7 @@ export default function Register() {
               className={`mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 ${
                 errors.email
                   ? "border-red-400 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-blue-200"
+                  : "border-gray-300 focus:ring-green-200"
               }`}
               placeholder="seu@email.com"
             />
@@ -83,6 +101,8 @@ export default function Register() {
               <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
             )}
           </div>
+
+          {/* Senha */}
           <div>
             <label className="block text-sm font-medium">Senha</label>
             <input
@@ -91,7 +111,7 @@ export default function Register() {
               className={`mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 ${
                 errors.password
                   ? "border-red-400 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-blue-200"
+                  : "border-gray-300 focus:ring-green-200"
               }`}
               placeholder="********"
             />
@@ -99,6 +119,8 @@ export default function Register() {
               <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>
             )}
           </div>
+
+          {/* Confirmação */}
           <div>
             <label className="block text-sm font-medium">Confirme a Senha</label>
             <input
@@ -107,7 +129,7 @@ export default function Register() {
               className={`mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 ${
                 errors.confirm
                   ? "border-red-400 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-blue-200"
+                  : "border-gray-300 focus:ring-green-200"
               }`}
               placeholder="********"
             />
@@ -115,6 +137,7 @@ export default function Register() {
               <p className="text-xs text-red-600 mt-1">{errors.confirm.message}</p>
             )}
           </div>
+
           <button
             type="submit"
             disabled={isSubmitting}

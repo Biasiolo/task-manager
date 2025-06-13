@@ -7,18 +7,19 @@ import { TaskCreateSchema, TaskUpdateSchema } from "../../utils/zodSchemas";
 import { Task, useTasks } from "./useTasks";
 import { TaskCreateForm, TaskUpdateForm } from "./types";
 import { format } from "date-fns";
+import clsx from "clsx";
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: Task; // Para popular em edição
+  initialData?: Task;
 }
 
 export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
   const isEditMode = Boolean(initialData);
   const { createTask, updateTask } = useTasks();
 
-  // Valores padrão para NOVA tarefa
+  // Default values for creation
   const defaultValues = useMemo<TaskCreateForm>(
     () => ({
       title: "",
@@ -31,7 +32,6 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
       status: "Pendente",
       link: "",
       name: "",
-      // user_id é injetado internamente no createTask
       observation: null,
     }),
     []
@@ -47,14 +47,12 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
     defaultValues,
   });
 
-  // Ao abrir o modal em modo criação, resetar para os defaults
+  // Reset on open/new
   useEffect(() => {
-    if (isOpen && !isEditMode) {
-      reset(defaultValues);
-    }
+    if (isOpen && !isEditMode) reset(defaultValues);
   }, [isOpen, isEditMode, reset, defaultValues]);
 
-  // Se vier initialData, popular o form em modo edição
+  // Populate on edit
   useEffect(() => {
     if (initialData) {
       reset({
@@ -77,11 +75,7 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
   const onSubmit = async (data: TaskCreateForm | TaskUpdateForm) => {
     try {
       if (isEditMode && initialData) {
-        const updateData: TaskUpdateForm = {
-          ...(data as TaskUpdateForm),
-          id: initialData.id,
-        };
-        await updateTask.mutateAsync(updateData);
+        await updateTask.mutateAsync({ ...(data as TaskUpdateForm), id: initialData.id });
       } else {
         await createTask.mutateAsync(data as TaskCreateForm);
       }
@@ -95,20 +89,36 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-lg p-6 shadow-lg z-10">
-        <h2 className="text-xl font-bold mb-4">
+      {/* backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* modal */}
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/70 backdrop-blur-md rounded-2xl shadow-2xl p-8 z-10">
+        {/* top stripe */}
+        <div
+          className={clsx(
+            "absolute top-0 left-0 right-0 h-2 rounded-t-2xl",
+            "bg-gradient-to-r from-green-500 via-teal-600 to-green-500"
+          )}
+        />
+
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
           {isEditMode ? "Editar Tarefa" : "Nova Tarefa"}
         </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Título */}
           <div>
-            <label className="block text-sm font-medium">Título</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Título
+            </label>
             <input
               type="text"
               {...register("title")}
-              className="mt-1 w-full border rounded px-3 py-2"
+              className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
             />
             {errors.title && (
               <p className="text-xs text-red-500 mt-1">
@@ -119,11 +129,13 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
 
           {/* Descrição */}
           <div>
-            <label className="block text-sm font-medium">Descrição</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Descrição
+            </label>
             <textarea
               {...register("description")}
-              className="mt-1 w-full border rounded px-3 py-2"
               rows={3}
+              className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
             />
             {errors.description && (
               <p className="text-xs text-red-500 mt-1">
@@ -132,51 +144,55 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
             )}
           </div>
 
-          {/* Cliente */}
-          <div>
-            <label className="block text-sm font-medium">Cliente</label>
-            <input
-              type="text"
-              {...register("client")}
-              className="mt-1 w-full border rounded px-3 py-2"
-            />
-            {errors.client && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.client.message}
-              </p>
-            )}
+          {/* Cliente e Setor lado a lado */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Cliente
+              </label>
+              <input
+                type="text"
+                {...register("client")}
+                className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:ring-amber-300 focus:outline-none transition"
+              />
+              {errors.client && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.client.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Setor
+              </label>
+              <select
+                {...register("sector")}
+                className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:ring-amber-300 focus:outline-none transition"
+              >
+                <option value="">Selecione um setor</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Design">Design</option>
+                <option value="Web">Web</option>
+                <option value="Tráfego">Tráfego</option>
+                <option value="Copy">Copy</option>
+              </select>
+              {errors.sector && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.sector.message}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Setor */}
+          {/* Responsável */}
           <div>
-            <label className="block text-sm font-medium">Setor</label>
-            <select
-              {...register("sector")}
-              className="mt-1 w-full border rounded px-3 py-2"
-            >
-              <option value="">Selecione um setor</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Design">Design</option>
-              <option value="Web">Web</option>
-              <option value="Tráfego">Tráfego</option>
-              <option value="Copy">Copy</option>
-            </select>
-            {errors.sector && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.sector.message}
-              </p>
-            )}
-          </div>
-
-          {/* Nome do Responsável */}
-          <div>
-            <label className="block text-sm font-medium">
+            <label className="block text-sm font-medium text-gray-700">
               Nome do Responsável
             </label>
             <input
               type="text"
               {...register("name")}
-              className="mt-1 w-full border rounded px-3 py-2"
+              className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:ring-amber-300 focus:outline-none transition"
             />
             {errors.name && (
               <p className="text-xs text-red-500 mt-1">
@@ -185,80 +201,88 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
             )}
           </div>
 
-          {/* Data de Início */}
-          <div>
-            <label className="block text-sm font-medium">Data de Início</label>
-            <input
-              type="date"
-              {...register("start_date")}
-              className="mt-1 w-full border rounded px-3 py-2"
-            />
-            {errors.start_date && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.start_date.message}
-              </p>
-            )}
+          {/* Datas */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Início
+              </label>
+              <input
+                type="date"
+                {...register("start_date")}
+                className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:ring-amber-300 focus:outline-none transition"
+              />
+              {errors.start_date && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.start_date.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Vencimento
+              </label>
+              <input
+                type="date"
+                {...register("due_date")}
+                className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:ring-amber-300 focus:outline-none transition"
+              />
+              {errors.due_date && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.due_date.message}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Data de Vencimento */}
+          {/* Prioridade & Status */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Prioridade
+              </label>
+              <select
+                {...register("priority")}
+                className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:ring-amber-300 focus:outline-none transition"
+              >
+                <option value="Baixa">🟡 Baixa</option>
+                <option value="Média">🟠 Média</option>
+                <option value="Alta">🔴 Alta</option>
+              </select>
+              {errors.priority && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.priority.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Status
+              </label>
+              <select
+                {...register("status")}
+                className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:ring-amber-300 focus:outline-none transition"
+              >
+                <option value="Pendente">Pendente</option>
+                <option value="Concluída">Concluída</option>
+              </select>
+              {errors.status && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.status.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Link */}
           <div>
-            <label className="block text-sm font-medium">
-              Data de Vencimento
+            <label className="block text-sm font-medium text-gray-700">
+              Link (opcional)
             </label>
-            <input
-              type="date"
-              {...register("due_date")}
-              className="mt-1 w-full border rounded px-3 py-2"
-            />
-            {errors.due_date && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.due_date.message}
-              </p>
-            )}
-          </div>
-
-          {/* Prioridade */}
-          <div>
-            <label className="block text-sm font-medium">Prioridade</label>
-            <select
-              {...register("priority")}
-              className="mt-1 w-full border rounded px-3 py-2"
-            >
-              <option value="Baixa">Baixa</option>
-              <option value="Média">Média</option>
-              <option value="Alta">Alta</option>
-            </select>
-            {errors.priority && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.priority.message}
-              </p>
-            )}
-          </div>
-
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium">Status</label>
-            <select
-              {...register("status")}
-              className="mt-1 w-full border rounded px-3 py-2"
-            >
-              <option value="Pendente">Pendente</option>
-              <option value="Concluída">Concluída</option>
-            </select>
-            {errors.status && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.status.message}
-              </p>
-            )}
-          </div>
-
-          {/* Link (opcional) */}
-          <div>
-            <label className="block text-sm font-medium">Link (opcional)</label>
             <input
               type="url"
               {...register("link")}
-              className="mt-1 w-full border rounded px-3 py-2"
+              className="mt-1 w-full bg-white/80 border border-gray-300 rounded-lg px-4 py-2 focus:ring-amber-300 focus:outline-none transition"
               placeholder="https://exemplo.com"
             />
             {errors.link && (
@@ -268,18 +292,19 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
             )}
           </div>
 
-          <div className="flex justify-end space-x-2 mt-6">
+          {/* Ações */}
+          <div className="flex justify-end space-x-3 mt-8">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded bg-gray-200"
+              className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+              className="px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition disabled:opacity-50 cursor-pointer"
             >
               {isEditMode ? "Salvar" : "Criar"}
             </button>
