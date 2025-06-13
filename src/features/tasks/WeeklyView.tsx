@@ -111,7 +111,7 @@ export function WeeklyView({
                   <div
                     key={day.toISOString()}
                     className={clsx(
-                      "flex flex-col bg-white rounded-xl shadow-md shadow-neutral-500 border-none transition-all duration-300 hover:shadow-md min-h-[200px]",
+                      "flex flex-col bg-white rounded-xl shadow-sm shadow-neutral-500 border-none transition-all duration-300 hover:shadow-md min-h-[200px]",
                       isToday && "ring-2 ring-white ring-opacity-50 border-blue-200"
                     )}
                   >
@@ -181,7 +181,7 @@ export function WeeklyView({
                                 "py-2 px-4 rounded-lg cursor-pointer transition-all duration-200 border-none group relative overflow-hidden",
                                 isDone
                                   ? "bg-green-50 hover:bg-green-100"
-                                  : "bg-white shadow-md shadow-neutral-500 hover:bg-orange-100  hover:shadow-sm"
+                                  : "bg-white shadow-sm hover:bg-slate-100  hover:shadow-sm"
                               )}
                             >
                               {/* Priority indicator bar */}
