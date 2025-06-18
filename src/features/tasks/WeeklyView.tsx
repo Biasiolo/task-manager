@@ -195,7 +195,7 @@ export function WeeklyView({
                               />
 
                               {/* Task Title */}
-                              <div className="flex items-start gap-2 m-2">
+                              <div className="flex items-start gap-2 m-2 ">
                                 {isDone && (
                                   <CheckCircle2 size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
                                 )}
@@ -265,7 +265,7 @@ export function WeeklyView({
                                   )}
                                   title="Excluir tarefa"
                                 >
-                                  <Trash2 size={12} />
+                                  <Trash2 size={12} className="cursor-pointer"/>
                                 </button>
                               </div>
                             </div>

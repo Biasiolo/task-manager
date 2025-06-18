@@ -96,7 +96,7 @@ export function TaskModal({ isOpen, onClose, initialData }: TaskModalProps) {
       />
 
       {/* modal */}
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-neutral-200/60 backdrop-blur-sm rounded-2xl shadow-2xl p-8 z-10">
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-neutral-100/70 backdrop-blur-sm rounded-2xl shadow-2xl p-8 z-10">
         {/* top stripe */}
         <div
           className={clsx(

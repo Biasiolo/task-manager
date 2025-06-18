@@ -57,31 +57,35 @@ export function TaskCard({
   return (
     <div
       className={clsx(
-        "group relative bg-white/80 h-72 backdrop-blur-sm rounded-3xl shadow-md shadow-neutral-500 border-none transition-all duration-300 hover:shadow-lg hover:scale-[1.02] overflow-hidden",
-        task.status === "Concluída" && "bg-slate-50/80 border-slate-200/50",
-        task.status !== "Concluída" &&
-          isOverdue &&
-          "bg-red-50/80 border-red-200/60",
-        task.status === "Pendente" &&
-          !isOverdue &&
-          "border-slate-200/50"
+        "group relative h-72 rounded-2xl transition-all duration-500 hover:scale-[1.02] overflow-hidden",
+        // Glassmorphism base
+        "bg-white/20 backdrop-blur-xl border border-white/30",
+        // Shadow sofisticada
+        "shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/10",
+        // Estados específicos
+        task.status === "Concluída" && 
+          "bg-emerald-50/20 border-emerald-200/40 shadow-emerald-500/5",
+        task.status !== "Concluída" && isOverdue && 
+          "bg-red-50/20 border-red-200/40 shadow-red-500/10",
+        task.status === "Pendente" && !isOverdue && 
+          "hover:bg-white/25 hover:border-white/40"
       )}
     >
-      {/* Faixa de prioridade no topo */}
+      {/* Faixa de prioridade - mais sutil */}
       <div
         className={clsx(
-          "absolute top-0 left-0 right-0 h-2 rounded-t-lg transition-all duration-300",
-          task.priority === "Alta" &&
-            "bg-gradient-to-b from-rose-500 via-red-500 to-red-600",
-          task.priority === "Média" &&
-            "bg-gradient-to-b from-amber-400 via-orange-400 to-orange-500",
-          task.priority === "Baixa" &&
-            "bg-gradient-to-b from-amber-400 via-yellow-500 to-yellow-600"
+          "absolute top-0 left-0 right-0 h-1 transition-all duration-300",
+          task.priority === "Alta" && "bg-gradient-to-r from-red-400/60 to-red-500/60",
+          task.priority === "Média" && "bg-gradient-to-r from-amber-400/60 to-orange-400/60",
+          task.priority === "Baixa" && "bg-gradient-to-r from-yellow-400/60 to-yellow-500/60"
         )}
       />
 
-      {/* Conteúdo em coluna para empurrar o footer para o fim */}
-      <div className="flex flex-col h-full p-6 pl-8">
+      {/* Background overlay sutil */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/5 pointer-events-none" />
+
+      {/* Conteúdo */}
+      <div className="relative flex flex-col h-full p-6">
         {/* HEADER */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-3 flex-1">
@@ -89,40 +93,40 @@ export function TaskCard({
               checked={task.status === "Concluída"}
               onCheckedChange={toggleComplete}
               className={clsx(
-                "w-5 h-5 border-2 rounded-lg focus:ring-2 focus:ring-slate-500/20 transition-all duration-200 mt-0.5 flex items-center justify-center cursor-pointer shadow-sm",
+                "w-5 h-5 border-2 rounded-lg focus:ring-2 focus:ring-white/30 transition-all duration-300 mt-0.5 flex items-center justify-center cursor-pointer backdrop-blur-sm",
                 task.status === "Concluída"
-                  ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600"
-                  : "border-slate-300 hover:border-slate-400 hover:bg-slate-50 bg-white"
+                  ? "bg-emerald-500/80 border-emerald-400/60 text-white hover:bg-emerald-500/90 shadow-lg shadow-emerald-500/20"
+                  : "border-white/40 hover:border-white/60 hover:bg-white/20 bg-white/10 shadow-inner"
               )}
             >
               <CheckboxPrimitive.Indicator className="flex items-center justify-center">
-                <Check size={12} className="text-white font-medium" />
+                <Check size={12} className="text-white font-bold drop-shadow-sm" />
               </CheckboxPrimitive.Indicator>
             </CheckboxPrimitive.Root>
 
             <div className="flex-1">
               <h3
                 className={clsx(
-                  "text-lg font-medium transition-all duration-200 leading-tight",
+                  "text-lg font-semibold transition-all duration-300 leading-tight drop-shadow-sm",
                   task.status === "Concluída"
-                    ? "line-through text-slate-500"
+                    ? "line-through text-slate-600/80"
                     : isOverdue
-                    ? "text-red-600"
-                    : "text-slate-800"
+                    ? "text-red-700/90"
+                    : "text-slate-800/90"
                 )}
               >
                 {task.title}
               </h3>
               {(task.client || task.sector) && (
-                <div className="flex flex-col gap-1 mt-2">
+                <div className="flex flex-col gap-1.5 mt-2">
                   {task.client && (
-                    <p className="text-sm font-medium text-slate-600 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+                    <p className="text-sm font-medium text-slate-700/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-slate-500/60 rounded-full shadow-sm" />
                       {task.client}
                     </p>
                   )}
                   {task.sector && (
-                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                    <p className="text-xs text-slate-600/70 uppercase tracking-wider font-semibold">
                       {task.sector}
                     </p>
                   )}
@@ -133,19 +137,19 @@ export function TaskCard({
 
           <span
             className={clsx(
-              "text-xs font-semibold rounded-full px-3 py-1.5 whitespace-nowrap ml-3 shadow-sm border backdrop-blur-sm",
+              "text-xs font-semibold rounded-full px-3 py-1.5 whitespace-nowrap ml-3 backdrop-blur-sm border transition-all duration-300",
               task.priority === "Alta" &&
                 (task.status === "Concluída"
-                  ? "bg-green-50/80 text-green-700 border-green-200/60"
-                  : "bg-red-100/80 text-red-700 border-red-300/60"),
+                  ? "bg-emerald-500/20 text-emerald-800/90 border-emerald-400/30 shadow-sm"
+                  : "bg-red-500/20 text-red-800/90 border-red-400/30 shadow-sm"),
               task.priority === "Média" &&
                 (task.status === "Concluída"
-                  ? "bg-green-50/80 text-green-700 border-green-200/60"
-                  : "bg-orange-100/80 text-orange-700 border-orange-300/60"),
+                  ? "bg-emerald-500/20 text-emerald-800/90 border-emerald-400/30 shadow-sm"
+                  : "bg-amber-500/20 text-amber-800/90 border-amber-400/30 shadow-sm"),
               task.priority === "Baixa" &&
                 (task.status === "Concluída"
-                  ? "bg-green-50/80 text-green-700 border-green-200/60"
-                  : "bg-yellow-100/80 text-yellow-700 border-yellow-300/60")
+                  ? "bg-emerald-500/20 text-emerald-800/90 border-emerald-400/30 shadow-sm"
+                  : "bg-yellow-500/20 text-yellow-800/90 border-yellow-400/30 shadow-sm")
             )}
           >
             {task.priority}
@@ -159,8 +163,8 @@ export function TaskCard({
               className={clsx(
                 "text-xs leading-relaxed",
                 task.status === "Concluída"
-                  ? "text-slate-500"
-                  : "text-slate-600"
+                  ? "text-slate-600/70"
+                  : "text-slate-700/80"
               )}
             >
               {task.description}
@@ -170,14 +174,14 @@ export function TaskCard({
 
         {/* RESPONSÁVEL */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex items-center justify-center w-7 h-7 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full shadow-sm border border-slate-200/50">
-            <User size={14} className="text-slate-600" />
+          <div className="flex items-center justify-center w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 shadow-sm">
+            <User size={14} className="text-slate-700/80" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-slate-800">
+            <span className="text-sm font-medium text-slate-800/90">
               {task.name ?? "Não atribuído"}
             </span>
-            <span className="text-xs text-slate-500">Responsável</span>
+            <span className="text-xs text-slate-600/70">Responsável</span>
           </div>
         </div>
 
@@ -185,22 +189,22 @@ export function TaskCard({
         <div className="flex-1" />
 
         {/* FOOTER */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-200/50">
+        <div className="flex items-center justify-between pt-4 border-t border-white/20">
           <div className="flex items-center gap-2">
             {task.status === "Concluída" ? (
-              <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50/80 px-3 py-1.5 rounded-lg border border-emerald-200/50">
+              <div className="flex items-center gap-2 text-emerald-700/90 bg-emerald-500/20 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-emerald-400/30 shadow-sm">
                 <CheckCircle2 size={14} />
                 <span className="text-sm font-medium">Concluída</span>
               </div>
             ) : isOverdue ? (
-              <div className="flex items-center gap-2 text-red-600 bg-red-50/80 px-3 py-1.5 rounded-lg border border-red-200/50">
+              <div className="flex items-center gap-2 text-red-700/90 bg-red-500/20 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-red-400/30 shadow-sm">
                 <AlertCircle size={14} />
                 <span className="text-sm font-medium">
                   Venceu {dueDate ? format(dueDate, "dd/MM") : ""}
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-slate-500 bg-slate-50/80 px-3 py-1.5 rounded-lg border border-slate-200/50">
+              <div className="flex items-center gap-2 text-slate-700/80 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/30 shadow-sm">
                 <Calendar size={14} />
                 <span className="text-sm font-medium">
                   {dueDate ? format(dueDate, "dd/MM/yyyy") : "Sem prazo"}
@@ -213,7 +217,7 @@ export function TaskCard({
             <button
               onClick={() => onEdit(task)}
               title="Editar tarefa"
-              className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100/80 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-200/50"
+              className="p-2.5 cursor-pointer text-slate-600/70 hover:text-slate-800/90 hover:bg-white/20 backdrop-blur-sm rounded-xl transition-all duration-300 border border-transparent hover:border-white/30 hover:shadow-sm"
             >
               <Edit2 size={16} />
             </button>
@@ -223,7 +227,7 @@ export function TaskCard({
                 onDelete(task.id);
               }}
               title="Excluir tarefa"
-              className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50/80 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200/50"
+              className="p-2.5 cursor-pointer text-slate-600/70 hover:text-red-600/90 hover:bg-red-500/20 backdrop-blur-sm rounded-xl transition-all duration-300 border border-transparent hover:border-red-400/30 hover:shadow-sm"
             >
               <Trash2 size={16} />
             </button>
@@ -231,8 +235,18 @@ export function TaskCard({
         </div>
       </div>
 
-      {/* Overlay de hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl" />
+      {/* Overlay de hover glassmorphism */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none rounded-2xl" />
+      
+      {/* Brilho sutil na borda */}
+      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none bg-gradient-to-br from-white/20 via-transparent to-transparent" 
+           style={{
+             background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%)',
+             maskImage: 'linear-gradient(black, black), linear-gradient(black, black)',
+             maskSize: '100% 100%, calc(100% - 2px) calc(100% - 2px)',
+             maskPosition: '0 0, 1px 1px',
+             maskComposite: 'subtract'
+           }} />
     </div>
   );
 }
