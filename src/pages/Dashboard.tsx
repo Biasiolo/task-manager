@@ -74,7 +74,7 @@ export default function Dashboard() {
               
               <button
                 onClick={openNew}
-                className="group relative bg-teal-700 hover:bg-slate-700 text-white px-6 py-3 rounded-xl 
+                className="group relative cursor-pointer bg-teal-700 hover:bg-slate-700 text-white px-6 py-3 rounded-xl 
                          font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5
                          border border-slate-700/20"
               >
@@ -155,7 +155,7 @@ export default function Dashboard() {
                   </div>
                   <button
                     onClick={openNew}
-                    className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    className="inline-flex cursor-pointer items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
